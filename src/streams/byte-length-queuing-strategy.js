@@ -1,7 +1,19 @@
 'use strict';
-const { createDataProperty } = require('./helpers.js');
 
-module.exports = class ByteLengthQueuingStrategy {
+(function (root, factory) {
+  if (typeof define === 'function' && define.amd) {
+    define('pdfjs/streams/byte-length-queuing-strategy',
+      ['exports', 'pdfjs/streams/helpers'], factory);
+  } else if (typeof exports !== 'undefined') {
+      factory(exports, require('./helpers.js'));
+  } else {
+      factory((root.pdfjsStreamsByteLengthQueuingStrategy = {}),
+        root.pdfjsStreamsHelpers);
+  }
+}(this, function(exports, streamsHelpers) {
+const createDataProperty = streamsHelpers.createDataProperty;
+
+class ByteLengthQueuingStrategy {
   constructor({ highWaterMark }) {
     createDataProperty(this, 'highWaterMark', highWaterMark);
   }
@@ -9,4 +21,7 @@ module.exports = class ByteLengthQueuingStrategy {
   size(chunk) {
     return chunk.byteLength;
   }
-};
+}
+
+exports.ByteLengthQueuingStrategy = ByteLengthQueuingStrategy;
+}));
