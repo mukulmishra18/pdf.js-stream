@@ -1,36 +1,55 @@
 'use strict';
-const assert = require('assert');
+
+(function (root, factory) {
+  if (typeof define === 'function' && define.amd) {
+    define('pdfjs/streams/helpers', ['exports',
+      'pdfjs/shared/util'], factory);
+  } else if (typeof exports !== 'undefined') {
+    factory(exports, require('../shared/util.js'));
+  } else {
+    factory((root.pdfjsStreamsHelpers = {}), root.pdfjsSharedUtil);
+  }
+}(this, function (exports, sharedUtil) {
+var assert = sharedUtil.assert;
 
 function IsPropertyKey(argument) {
   return typeof argument === 'string' || typeof argument === 'symbol';
 }
 
-exports.typeIsObject = x => (typeof x === 'object' && x !== null) || typeof x === 'function';
+var typeIsObject = x => (typeof x === 'object' && x !== null) ||
+                     typeof x === 'function';
 
-exports.createDataProperty = (o, p, v) => {
+var createDataProperty = (o, p, v) => {
   assert(exports.typeIsObject(o));
-  Object.defineProperty(o, p, { value: v, writable: true, enumerable: true, configurable: true });
+  Object.defineProperty(o, p, { value: v,
+                                writable: true,
+                                enumerable: true,
+                                configurable: true });
 };
 
-exports.createArrayFromList = elements => {
+var createArrayFromList = elements => {
   // We use arrays to represent lists, so this is basically a no-op.
   // Do a slice though just in case we happen to depend on the unique-ness.
   return elements.slice();
 };
 
-exports.ArrayBufferCopy = (dest, destOffset, src, srcOffset, n) => {
+var ArrayBufferCopy = (dest, destOffset, src, srcOffset, n) => {
   new Uint8Array(dest).set(new Uint8Array(src, srcOffset, n), destOffset);
 };
 
-exports.CreateIterResultObject = (value, done) => {
+var CreateIterResultObject = (value, done) => {
   assert(typeof done === 'boolean');
   const obj = {};
-  Object.defineProperty(obj, 'value', { value, enumerable: true, writable: true, configurable: true });
-  Object.defineProperty(obj, 'done', { value: done, enumerable: true, writable: true, configurable: true });
+  Object.defineProperty(obj, 'value', { value, enumerable: true,
+                                        writable: true,
+                                        configurable: true });
+  Object.defineProperty(obj, 'done', { value: done, enumerable: true,
+                                       writable: true,
+                                       configurable: true });
   return obj;
 };
 
-exports.IsFiniteNonNegativeNumber = v => {
+var IsFiniteNonNegativeNumber = v => {
   if (Number.isNaN(v)) {
     return false;
   }
@@ -52,7 +71,7 @@ function Call(F, V, args) {
   return Function.prototype.apply.call(F, V, args);
 }
 
-exports.InvokeOrNoop = (O, P, args) => {
+var InvokeOrNoop = (O, P, args) => {
   assert(O !== undefined);
   assert(IsPropertyKey(P));
   assert(Array.isArray(args));
@@ -65,7 +84,7 @@ exports.InvokeOrNoop = (O, P, args) => {
   return Call(method, O, args);
 };
 
-exports.PromiseInvokeOrNoop = (O, P, args) => {
+var PromiseInvokeOrNoop = (O, P, args) => {
   assert(O !== undefined);
   assert(IsPropertyKey(P));
   assert(Array.isArray(args));
@@ -76,7 +95,7 @@ exports.PromiseInvokeOrNoop = (O, P, args) => {
   }
 };
 
-exports.PromiseInvokeOrPerformFallback = (O, P, args, F, argsF) => {
+var PromiseInvokeOrPerformFallback = (O, P, args, F, argsF) => {
   assert(O !== undefined);
   assert(IsPropertyKey(P));
   assert(Array.isArray(args));
@@ -101,23 +120,40 @@ exports.PromiseInvokeOrPerformFallback = (O, P, args, F, argsF) => {
 };
 
 // Not implemented correctly
-exports.SameRealmTransfer = O => O;
+var SameRealmTransfer = O => O;
 
-exports.ValidateAndNormalizeHighWaterMark = highWaterMark => {
+var ValidateAndNormalizeHighWaterMark = highWaterMark => {
   highWaterMark = Number(highWaterMark);
   if (Number.isNaN(highWaterMark) || highWaterMark < 0) {
-    throw new RangeError('highWaterMark property of a queuing strategy must be non-negative and non-NaN');
+    throw new RangeError('highWaterMark property of a queuing' +
+                         ' strategy must be non-negative and non-NaN');
   }
 
   return highWaterMark;
 };
 
-exports.ValidateAndNormalizeQueuingStrategy = (size, highWaterMark) => {
+var ValidateAndNormalizeQueuingStrategy = (size, highWaterMark) => {
   if (size !== undefined && typeof size !== 'function') {
-    throw new TypeError('size property of a queuing strategy must be a function');
+    throw new TypeError('size property of a queuing strategy must be' +
+                        ' a function');
   }
 
   highWaterMark = exports.ValidateAndNormalizeHighWaterMark(highWaterMark);
 
   return { size, highWaterMark };
 };
+
+exports.typeIsObject = typeIsObject;
+exports.createDataProperty = createDataProperty;
+exports.createArrayFromList = createArrayFromList;
+exports.ArrayBufferCopy = ArrayBufferCopy;
+exports.CreateIterResultObject = CreateIterResultObject;
+exports.IsFiniteNonNegativeNumber = IsFiniteNonNegativeNumber;
+exports.InvokeOrNoop = InvokeOrNoop;
+exports.PromiseInvokeOrNoop = PromiseInvokeOrNoop;
+exports.PromiseInvokeOrPerformFallback = PromiseInvokeOrPerformFallback;
+exports.SameRealmTransfer = SameRealmTransfer;
+exports.ValidateAndNormalizeHighWaterMark = ValidateAndNormalizeHighWaterMark;
+exports.ValidateAndNormalizeQueuingStrategy =
+  ValidateAndNormalizeQueuingStrategy;
+}));
