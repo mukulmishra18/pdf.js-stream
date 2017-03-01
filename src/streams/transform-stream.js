@@ -1,3 +1,18 @@
+/* Copyright 2017 Mozilla Foundation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 'use strict';
 
 (function (root, factory) {
@@ -15,24 +30,24 @@
   }
 }(this, function (exports, streamsHelpers, streamsReadableStream,
                   streamsWritableStream, sharedUtil) {
-  var assert = sharedUtil.assert;
-  var InvokeOrNoop = streamsHelpers.InvokeOrNoop;
-  var PromiseInvokeOrPerformFallback =
-    streamsHelpers.PromiseInvokeOrPerformFallback;
-  var PromiseInvokeOrNoop = streamsHelpers.PromiseInvokeOrNoop;
-  var typeIsObject = streamsHelpers.typeIsObject;
-  var ReadableStream = streamsReadableStream.ReadableStream;
-  var ReadableStreamDefaultControllerClose =
-    streamsReadableStream.ReadableStreamDefaultControllerClose;
-  var ReadableStreamDefaultControllerEnqueue =
-    streamsReadableStream.ReadableStreamDefaultControllerEnqueue;
-  var ReadableStreamDefaultControllerError =
-    streamsReadableStream.ReadableStreamDefaultControllerError;
-  var ReadableStreamDefaultControllerGetDesiredSize =
-    streamsReadableStream.ReadableStreamDefaultControllerGetDesiredSize;
-  var WritableStream = streamsWritableStream.WritableStream;
-  var WritableStreamDefaultControllerError =
-    streamsWritableStream.WritableStreamDefaultControllerError;
+var assert = sharedUtil.assert;
+var InvokeOrNoop = streamsHelpers.InvokeOrNoop;
+var PromiseInvokeOrPerformFallback =
+  streamsHelpers.PromiseInvokeOrPerformFallback;
+var PromiseInvokeOrNoop = streamsHelpers.PromiseInvokeOrNoop;
+var typeIsObject = streamsHelpers.typeIsObject;
+var ReadableStream = streamsReadableStream.ReadableStream;
+var ReadableStreamDefaultControllerClose =
+  streamsReadableStream.ReadableStreamDefaultControllerClose;
+var ReadableStreamDefaultControllerEnqueue =
+  streamsReadableStream.ReadableStreamDefaultControllerEnqueue;
+var ReadableStreamDefaultControllerError =
+  streamsReadableStream.ReadableStreamDefaultControllerError;
+var ReadableStreamDefaultControllerGetDesiredSize =
+  streamsReadableStream.ReadableStreamDefaultControllerGetDesiredSize;
+var WritableStream = streamsWritableStream.WritableStream;
+var WritableStreamDefaultControllerError =
+  streamsWritableStream.WritableStreamDefaultControllerError;
 
 
 // Methods on the transform stream controller object
