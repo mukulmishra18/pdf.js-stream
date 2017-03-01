@@ -1,10 +1,39 @@
 'use strict';
-const assert = require('assert');
-const { InvokeOrNoop, PromiseInvokeOrPerformFallback, PromiseInvokeOrNoop, typeIsObject } = require('./helpers.js');
-const { ReadableStream, ReadableStreamDefaultControllerClose,
-        ReadableStreamDefaultControllerEnqueue, ReadableStreamDefaultControllerError,
-        ReadableStreamDefaultControllerGetDesiredSize } = require('./readable-stream.js');
-const { WritableStream, WritableStreamDefaultControllerError } = require('./writable-stream.js');
+
+(function (root, factory) {
+  if (typeof define === 'function' && define.umd) {
+    define('pdfjs/streams/transform-stream', ['exports',
+      'pdfjs/streams/helpers', 'pdfjs/streams/readable-stream',
+      'pdfjs/streams/writable-stream', 'pdfjs/shared/util'], factory);
+  } else if (typeof exports !== 'undefined') {
+    factory(exports, require('./helpers.js'), require('./readable-stream.js'),
+      require('./writable-stream.js'), require('../shared/util.js'));
+  } else {
+    factory((root.pdfjsStreamsTransformStream = {}), root.pdfjsStreamsHelpers,
+      root.pdfjsStreamsReadableStream, root.pdfjsStreamsWritableStream,
+      root.pdfjsSharedUtil);
+  }
+}(this, function (exports, streamsHelpers, streamsReadableStream,
+                  streamsWritableStream, sharedUtil) {
+  var assert = sharedUtil.assert;
+  var InvokeOrNoop = streamsHelpers.InvokeOrNoop;
+  var PromiseInvokeOrPerformFallback =
+    streamsHelpers.PromiseInvokeOrPerformFallback;
+  var PromiseInvokeOrNoop = streamsHelpers.PromiseInvokeOrNoop;
+  var typeIsObject = streamsHelpers.typeIsObject;
+  var ReadableStream = streamsReadableStream.ReadableStream;
+  var ReadableStreamDefaultControllerClose =
+    streamsReadableStream.ReadableStreamDefaultControllerClose;
+  var ReadableStreamDefaultControllerEnqueue =
+    streamsReadableStream.ReadableStreamDefaultControllerEnqueue;
+  var ReadableStreamDefaultControllerError =
+    streamsReadableStream.ReadableStreamDefaultControllerError;
+  var ReadableStreamDefaultControllerGetDesiredSize =
+    streamsReadableStream.ReadableStreamDefaultControllerGetDesiredSize;
+  var WritableStream = streamsWritableStream.WritableStream;
+  var WritableStreamDefaultControllerError =
+    streamsWritableStream.WritableStreamDefaultControllerError;
+
 
 // Methods on the transform stream controller object
 
@@ -33,7 +62,8 @@ function TransformStreamEnqueueToReadable(transformStream, chunk) {
     throw new TypeError('Readable side is already closed');
   }
 
-  // We throttle transformer.transform invocation based on the backpressure of the ReadableStream, but we still
+  // We throttle transformer.transform invocation based on the
+  // backpressure of the ReadableStream, but we still
   // accept TransformStreamEnqueueToReadable() calls.
 
   const controller = transformStream._readableController;
@@ -49,15 +79,17 @@ function TransformStreamEnqueueToReadable(transformStream, chunk) {
     throw transformStream._storedError;
   }
 
-  const desiredSize = ReadableStreamDefaultControllerGetDesiredSize(controller);
-  const maybeBackpressure = desiredSize <= 0;
+  var desiredSize = ReadableStreamDefaultControllerGetDesiredSize(controller);
+  var maybeBackpressure = desiredSize <= 0;
 
   if (maybeBackpressure === true && transformStream._backpressure === false) {
-    // This allows pull() again. When desiredSize is 0, it's possible that a pull() will happen immediately (but
-    // asynchronously) after this because of pending read()s and set _backpressure back to false.
+    // This allows pull() again. When desiredSize is 0, it's possible that a
+    // pull() will happen immediately (but asynchronously) after this because
+    // of pending read()s and set _backpressure back to false.
     //
-    // If pull() could be called from inside enqueue(), then this logic would be wrong. This cannot happen
-    // because there is always a promise pending from start() or pull() when _backpressure is false.
+    // If pull() could be called from inside enqueue(), then this logic would
+    // be wrong. This cannot happen because there is always a promise pending
+    // from start() or pull() when _backpressure is false.
     TransformStreamSetBackpressure(transformStream, true);
   }
 }
@@ -100,15 +132,17 @@ function TransformStreamErrorInternal(transformStream, e) {
   transformStream._storedError = e;
 
   if (transformStream._writableDone === false) {
-    WritableStreamDefaultControllerError(transformStream._writableController, e);
+    WritableStreamDefaultControllerError(
+      transformStream._writableController, e);
   }
   if (transformStream._readableClosed === false) {
-    ReadableStreamDefaultControllerError(transformStream._readableController, e);
+    ReadableStreamDefaultControllerError(
+      transformStream._readableController, e);
   }
 }
 
-// Used for preventing the next write() call on TransformStreamSink until there
-// is no longer backpressure.
+// Used for preventing the next write() call on TransformStreamSink
+// until there is no longer backpressure.
 function TransformStreamReadableReadyPromise(transformStream) {
   assert(transformStream._backpressureChangePromise !== undefined,
          '_backpressureChangePromise should have been initialized');
@@ -117,7 +151,8 @@ function TransformStreamReadableReadyPromise(transformStream) {
     return Promise.resolve();
   }
 
-  assert(transformStream._backpressure === true, '_backpressure should have been initialized');
+  assert(transformStream._backpressure === true,
+    '_backpressure should have been initialized');
 
   return transformStream._backpressureChangePromise;
 }
@@ -127,7 +162,8 @@ function TransformStreamSetBackpressure(transformStream, backpressure) {
 
   // Passes also when called during construction.
   assert(transformStream._backpressure !== backpressure,
-         'TransformStreamSetBackpressure() should be called only when backpressure is changed');
+         'TransformStreamSetBackpressure() should be called' +
+         ' only when backpressure is changed');
 
   if (transformStream._backpressureChangePromise !== undefined) {
     // The fulfillment value is just for a sanity check.
@@ -140,7 +176,8 @@ function TransformStreamSetBackpressure(transformStream, backpressure) {
 
   transformStream._backpressureChangePromise.then(resolution => {
     assert(resolution !== backpressure,
-           '_backpressureChangePromise should be fulfilled only when backpressure is changed');
+           '_backpressureChangePromise should be fulfilled only' +
+           ' when backpressure is changed');
   });
 
   transformStream._backpressure = backpressure;
@@ -164,8 +201,9 @@ function TransformStreamTransform(transformStream, chunk) {
   const transformer = transformStream._transformer;
   const controller = transformStream._transformStreamController;
 
-  const transformPromise = PromiseInvokeOrPerformFallback(transformer, 'transform', [chunk, controller],
-                             TransformStreamDefaultTransform, [chunk, controller]);
+  const transformPromise = PromiseInvokeOrPerformFallback(transformer,
+    'transform', [chunk, controller], TransformStreamDefaultTransform,
+    [chunk, controller]);
 
   return transformPromise.then(
     () => {
@@ -214,7 +252,8 @@ class TransformStreamSink {
 
     transformStream._writableController = c;
 
-    return this._startPromise.then(() => TransformStreamReadableReadyPromise(transformStream));
+    return this._startPromise.then(() => TransformStreamReadableReadyPromise(
+                                           transformStream));
   }
 
   write(chunk) {
@@ -228,7 +267,8 @@ class TransformStreamSink {
   abort() {
     const transformStream = this._transformStream;
     transformStream._writableDone = true;
-    TransformStreamErrorInternal(transformStream, new TypeError('Writable side aborted'));
+    TransformStreamErrorInternal(transformStream,
+      new TypeError('Writable side aborted'));
   }
 
   close() {
@@ -279,7 +319,8 @@ class TransformStreamSource {
         return Promise.resolve();
       }
 
-      assert(transformStream._backpressure === false, '_backpressure should have been initialized');
+      assert(transformStream._backpressure === false,
+        '_backpressure should have been initialized');
 
       return transformStream._backpressureChangePromise;
     });
@@ -291,7 +332,8 @@ class TransformStreamSource {
     const transformStream = this._transformStream;
 
     // Invariant. Enforced by the promises returned by start() and pull().
-    assert(transformStream._backpressure === true, 'pull() should be never called while _backpressure is false');
+    assert(transformStream._backpressure === true,
+      'pull() should be never called while _backpressure is false');
 
     assert(transformStream._backpressureChangePromise !== undefined,
            '_backpressureChangePromise should have been initialized');
@@ -305,7 +347,8 @@ class TransformStreamSource {
   cancel() {
     const transformStream = this._transformStream;
     transformStream._readableClosed = true;
-    TransformStreamErrorInternal(transformStream, new TypeError('Readable side canceled'));
+    TransformStreamErrorInternal(transformStream,
+      new TypeError('Readable side canceled'));
   }
 }
 
@@ -380,7 +423,8 @@ class TransformStream {
     this._backpressureChangePromise = undefined;
     this._backpressureChangePromise_resolve = undefined;
 
-    this._transformStreamController = new TransformStreamDefaultController(this);
+    this._transformStreamController =
+      new TransformStreamDefaultController(this);
 
     let startPromise_resolve;
     const startPromise = new Promise(resolve => {
@@ -398,9 +442,11 @@ class TransformStream {
     assert(this._writableController !== undefined);
     assert(this._readableController !== undefined);
 
-    const desiredSize = ReadableStreamDefaultControllerGetDesiredSize(this._readableController);
-    // Set _backpressure based on desiredSize. As there is no read() at this point, we can just interpret
-    // desiredSize being non-positive as backpressure.
+    const desiredSize =
+      ReadableStreamDefaultControllerGetDesiredSize(this._readableController);
+    // Set _backpressure based on desiredSize. As there is no read() at
+    // this point, we can just interpret desiredSize being non-positive
+    // as backpressure.
     TransformStreamSetBackpressure(this, desiredSize <= 0);
 
     const transformStream = this;
@@ -408,7 +454,8 @@ class TransformStream {
                           [transformStream._transformStreamController]);
     startPromise_resolve(startResult);
     startPromise.catch(e => {
-      // The underlyingSink and underlyingSource will error the readable and writable ends on their own.
+      // The underlyingSink and underlyingSource will error the readable
+      // and writable ends on their own.
       if (transformStream._errored === false) {
         transformStream._errored = true;
         transformStream._storedError = e;
@@ -433,13 +480,12 @@ class TransformStream {
   }
 }
 
-module.exports = { TransformStream };
-
 // Helper functions for the TransformStreamDefaultController.
 
 function defaultControllerBrandCheckException(name) {
   return new TypeError(
-    `TransformStreamDefaultController.prototype.${name} can only be used on a TransformStreamDefaultController`);
+    'TransformStreamDefaultController.prototype.' + name +
+    'can only be used on a TransformStreamDefaultController');
 }
 
 // Helper functions for the TransformStream.
@@ -448,3 +494,6 @@ function streamBrandCheckException(name) {
   return new TypeError(
     `TransformStream.prototype.${name} can only be used on a TransformStream`);
 }
+
+exports.TransformStream = TransformStream;
+}));

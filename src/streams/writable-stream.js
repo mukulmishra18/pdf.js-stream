@@ -2,7 +2,7 @@
 
 (function (root, factory) {
   if (typeof define === 'function' && define.amd) {
-    define('pdfjs/streams/wirtable-stream', ['exports', 'pdfjs/streams/helpers',
+    define('pdfjs/streams/writable-stream', ['exports', 'pdfjs/streams/helpers',
            'pdfjs/streams/utils', 'pdfjs/streams/queue-with-sizes',
            'pdfjs/shared/util'], factory);
   } else if (typeof exports !== 'undefined') {
@@ -14,8 +14,8 @@
              root.pdfjsSharedUtil);
   }
 }(this, function (exports, streamsHelpers, streamsUtils,
-                  streamsQueueWithSizes, sharedUtils) {
-const assert = sharedUtils.assert;
+                  streamsQueueWithSizes, sharedUtil) {
+const assert = sharedUtil.assert;
 const InvokeOrNoop = streamsHelpers.InvokeOrNoop;
 const PromiseInvokeOrNoop = streamsHelpers.PromiseInvokeOrNoop;
 const ValidateAndNormalizeQueuingStrategy =
