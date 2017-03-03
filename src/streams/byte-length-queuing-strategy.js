@@ -26,7 +26,7 @@
         root.pdfjsStreamsHelpers);
   }
 }(this, function(exports, streamsHelpers) {
-const createDataProperty = streamsHelpers.createDataProperty;
+var createDataProperty = streamsHelpers.createDataProperty;
 
 class ByteLengthQueuingStrategy {
   constructor({ highWaterMark }) {

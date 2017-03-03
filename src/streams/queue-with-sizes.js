@@ -36,7 +36,7 @@ var DequeueValue = container => {
   assert(container._queue.length > 0,
     'Spec-level failure: should never dequeue from an empty queue.');
 
-  const pair = container._queue.shift();
+  var pair = container._queue.shift();
   container._queueTotalSize -= pair.size;
   if (container._queueTotalSize < 0) {
     container._queueTotalSize = 0;
@@ -67,7 +67,7 @@ var PeekQueueValue = container => {
   assert(container._queue.length > 0,
     'Spec-level failure: should never peek at an empty queue.');
 
-  const pair = container._queue[0];
+  var pair = container._queue[0];
   return pair.value;
 };
 

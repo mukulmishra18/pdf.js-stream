@@ -54,7 +54,7 @@ var ArrayBufferCopy = (dest, destOffset, src, srcOffset, n) => {
 
 var CreateIterResultObject = (value, done) => {
   assert(typeof done === 'boolean');
-  const obj = {};
+  var obj = {};
   Object.defineProperty(obj, 'value', { value, enumerable: true,
                                         writable: true,
                                         configurable: true });
@@ -91,7 +91,7 @@ var InvokeOrNoop = (O, P, args) => {
   assert(IsPropertyKey(P));
   assert(Array.isArray(args));
 
-  const method = O[P];
+  var method = O[P];
   if (method === undefined) {
     return undefined;
   }

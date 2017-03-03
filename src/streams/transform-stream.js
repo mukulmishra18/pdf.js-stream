@@ -81,7 +81,7 @@ function TransformStreamEnqueueToReadable(transformStream, chunk) {
   // backpressure of the ReadableStream, but we still
   // accept TransformStreamEnqueueToReadable() calls.
 
-  const controller = transformStream._readableController;
+  var controller = transformStream._readableController;
 
   try {
     ReadableStreamDefaultControllerEnqueue(controller, chunk);
@@ -199,7 +199,7 @@ function TransformStreamSetBackpressure(transformStream, backpressure) {
 }
 
 function TransformStreamDefaultTransform(chunk, transformStreamController) {
-  const transformStream = transformStreamController._controlledTransformStream;
+  var transformStream = transformStreamController._controlledTransformStream;
   TransformStreamEnqueueToReadable(transformStream, chunk);
   return Promise.resolve();
 }
@@ -213,10 +213,10 @@ function TransformStreamTransform(transformStream, chunk) {
 
   transformStream._transforming = true;
 
-  const transformer = transformStream._transformer;
-  const controller = transformStream._transformStreamController;
+  var transformer = transformStream._transformer;
+  var controller = transformStream._transformStreamController;
 
-  const transformPromise = PromiseInvokeOrPerformFallback(transformer,
+  var transformPromise = PromiseInvokeOrPerformFallback(transformer,
     'transform', [chunk, controller], TransformStreamDefaultTransform,
     [chunk, controller]);
 
@@ -263,7 +263,7 @@ class TransformStreamSink {
   }
 
   start(c) {
-    const transformStream = this._transformStream;
+    var transformStream = this._transformStream;
 
     transformStream._writableController = c;
 
@@ -274,13 +274,13 @@ class TransformStreamSink {
   write(chunk) {
     // console.log('TransformStreamSink.write()');
 
-    const transformStream = this._transformStream;
+    var transformStream = this._transformStream;
 
     return TransformStreamTransform(transformStream, chunk);
   }
 
   abort() {
-    const transformStream = this._transformStream;
+    var transformStream = this._transformStream;
     transformStream._writableDone = true;
     TransformStreamErrorInternal(transformStream,
       new TypeError('Writable side aborted'));
@@ -289,13 +289,13 @@ class TransformStreamSink {
   close() {
     // console.log('TransformStreamSink.close()');
 
-    const transformStream = this._transformStream;
+    var transformStream = this._transformStream;
 
     assert(transformStream._transforming === false);
 
     transformStream._writableDone = true;
 
-    const flushPromise = PromiseInvokeOrNoop(transformStream._transformer,
+    var flushPromise = PromiseInvokeOrNoop(transformStream._transformer,
                          'flush', [transformStream._transformStreamController]);
     // Return a promise that is fulfilled with undefined on success.
     return flushPromise.then(() => {
@@ -320,7 +320,7 @@ class TransformStreamSource {
   }
 
   start(c) {
-    const transformStream = this._transformStream;
+    var transformStream = this._transformStream;
 
     transformStream._readableController = c;
 
@@ -344,7 +344,7 @@ class TransformStreamSource {
   pull() {
     // console.log('TransformStreamSource.pull()');
 
-    const transformStream = this._transformStream;
+    var transformStream = this._transformStream;
 
     // Invariant. Enforced by the promises returned by start() and pull().
     assert(transformStream._backpressure === true,
@@ -360,7 +360,7 @@ class TransformStreamSource {
   }
 
   cancel() {
-    const transformStream = this._transformStream;
+    var transformStream = this._transformStream;
     transformStream._readableClosed = true;
     TransformStreamErrorInternal(transformStream,
       new TypeError('Readable side canceled'));
@@ -387,8 +387,8 @@ class TransformStreamDefaultController {
       throw defaultControllerBrandCheckException('desiredSize');
     }
 
-    const transformStream = this._controlledTransformStream;
-    const readableController = transformStream._readableController;
+    var transformStream = this._controlledTransformStream;
+    var readableController = transformStream._readableController;
 
     return ReadableStreamDefaultControllerGetDesiredSize(readableController);
   }
@@ -421,7 +421,7 @@ class TransformStreamDefaultController {
 class TransformStream {
   constructor(transformer = {}) {
     this._transformer = transformer;
-    const { readableStrategy, writableStrategy } = transformer;
+    var { readableStrategy, writableStrategy } = transformer;
 
     this._transforming = false;
     this._errored = false;
@@ -441,31 +441,31 @@ class TransformStream {
     this._transformStreamController =
       new TransformStreamDefaultController(this);
 
-    let startPromise_resolve;
-    const startPromise = new Promise(resolve => {
+    var startPromise_resolve;
+    var startPromise = new Promise(resolve => {
       startPromise_resolve = resolve;
     });
 
-    const source = new TransformStreamSource(this, startPromise);
+    var source = new TransformStreamSource(this, startPromise);
 
     this._readable = new ReadableStream(source, readableStrategy);
 
-    const sink = new TransformStreamSink(this, startPromise);
+    var sink = new TransformStreamSink(this, startPromise);
 
     this._writable = new WritableStream(sink, writableStrategy);
 
     assert(this._writableController !== undefined);
     assert(this._readableController !== undefined);
 
-    const desiredSize =
+    var desiredSize =
       ReadableStreamDefaultControllerGetDesiredSize(this._readableController);
     // Set _backpressure based on desiredSize. As there is no read() at
     // this point, we can just interpret desiredSize being non-positive
     // as backpressure.
     TransformStreamSetBackpressure(this, desiredSize <= 0);
 
-    const transformStream = this;
-    const startResult = InvokeOrNoop(transformer, 'start',
+    var transformStream = this;
+    var startResult = InvokeOrNoop(transformer, 'start',
                           [transformStream._transformStreamController]);
     startPromise_resolve(startResult);
     startPromise.catch(e => {
